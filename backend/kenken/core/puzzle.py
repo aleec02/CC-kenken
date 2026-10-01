@@ -121,7 +121,7 @@ class Puzzle:
         )
 
     def save(self, path: str | Path) -> None:
-        Path(path).write_text(json.dumps(self.to_dict(), indent=2), encoding="utf-8")
+        Path(path).write_text(json.dumps(self.to_dict(), indent=2), encoding="utf-8", newline="\n")
 
     @classmethod
     def load(cls, path: str | Path) -> Puzzle:

@@ -1,0 +1,10 @@
+# Normalize text files to LF in the repository (Windows checkouts may still use CRLF locally)
+* text=auto eol=lf
+
+# Binary data
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.npz  binary
+*.rar  binary

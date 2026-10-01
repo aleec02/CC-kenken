@@ -42,7 +42,8 @@ class Label:
         return data
 
     def save(self, path: Path) -> None:
-        path.write_text(json.dumps(self.to_dict(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(self.to_dict(), indent=2, ensure_ascii=False) + "\n",
+                        encoding="utf-8", newline="\n")
 
     @classmethod
     def load(cls, path: Path) -> Label:
@@ -110,7 +111,7 @@ def scan() -> list[Sample]:
 
 def save_manifest(samples: list[Sample]) -> Path:
     data = {"version": 1, "samples": [asdict(s) for s in samples]}
-    MANIFEST_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    MANIFEST_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8", newline="\n")
     return MANIFEST_PATH
 
 

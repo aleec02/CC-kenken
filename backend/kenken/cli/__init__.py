@@ -85,7 +85,7 @@ def _save(out: Path, stem: str, response) -> list[Path]:
         path.write_bytes(base64.b64decode(url.split(",", 1)[1]))
         written.append(path)
     path = out / f"{stem}_{type(response).__name__.removesuffix('Response').lower()}.json"
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     return [path] + written
 
 
