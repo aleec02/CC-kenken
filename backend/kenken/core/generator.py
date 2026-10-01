@@ -12,10 +12,10 @@ import random
 import cv2
 import numpy as np
 
+from .cp import resolver
 from .fonts import available_fonts
 from .puzzle import Cage, Puzzle
 from .render import RenderStyle, render_puzzle
-from .solver import solve
 
 
 def random_latin_square(n: int, rng: random.Random) -> list[list[int]]:
@@ -81,8 +81,7 @@ def generate_puzzle(n: int, seed: int | None = None, unique: bool = True, tries:
         puzzle = Puzzle(n, cages)
         if not unique:
             return puzzle, sol
-        result = solve(puzzle, encoding="table", check_unique=True, time_limit=10)
-        if result.stats.get("unique"):
+        if resolver(puzzle, codificacion="table", tiempo_limite=10).unica:
             return puzzle, sol
     return puzzle, sol
 
