@@ -1,0 +1,585 @@
+{
+  "version": 1,
+  "samples": [
+    {
+      "id": "digital-4x4-01",
+      "file": "primary/digital/4x4/1.pdf",
+      "label": "primary/digital/4x4/1.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 4,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-4x4-02",
+      "file": "primary/digital/4x4/2.pdf",
+      "label": "primary/digital/4x4/2.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 4,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-4x4-03",
+      "file": "primary/digital/4x4/3.pdf",
+      "label": "primary/digital/4x4/3.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 4,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-4x4-04",
+      "file": "primary/digital/4x4/4.pdf",
+      "label": "primary/digital/4x4/4.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 4,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-6x6-01",
+      "file": "primary/digital/6x6/1.pdf",
+      "label": "primary/digital/6x6/1.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 6,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-6x6-02",
+      "file": "primary/digital/6x6/2.pdf",
+      "label": "primary/digital/6x6/2.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 6,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-6x6-03",
+      "file": "primary/digital/6x6/3.pdf",
+      "label": "primary/digital/6x6/3.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 6,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-6x6-04",
+      "file": "primary/digital/6x6/4.pdf",
+      "label": "primary/digital/6x6/4.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 6,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-8x8-01",
+      "file": "primary/digital/8x8/1.pdf",
+      "label": "primary/digital/8x8/1.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 8,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-8x8-02",
+      "file": "primary/digital/8x8/2.pdf",
+      "label": "primary/digital/8x8/2.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 8,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-8x8-03",
+      "file": "primary/digital/8x8/3.pdf",
+      "label": "primary/digital/8x8/3.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 8,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "digital-8x8-04",
+      "file": "primary/digital/8x8/4.pdf",
+      "label": "primary/digital/8x8/4.json",
+      "source": "digital",
+      "split": "dev",
+      "size": 8,
+      "label_source": "pdf",
+      "verified": true
+    },
+    {
+      "id": "printed-4x4-01",
+      "file": "primary/printed/4x4/1.jpeg",
+      "label": "primary/printed/4x4/1.json",
+      "source": "printed",
+      "split": "test",
+      "size": 4,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-4x4-02",
+      "file": "primary/printed/4x4/2.jpeg",
+      "label": "primary/printed/4x4/2.json",
+      "source": "printed",
+      "split": "test",
+      "size": 4,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-4x4-03",
+      "file": "primary/printed/4x4/3.jpeg",
+      "label": "primary/printed/4x4/3.json",
+      "source": "printed",
+      "split": "test",
+      "size": 4,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-4x4-04",
+      "file": "primary/printed/4x4/4.jpeg",
+      "label": "primary/printed/4x4/4.json",
+      "source": "printed",
+      "split": "test",
+      "size": 4,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-4x4-05",
+      "file": "primary/printed/4x4/5.jpeg",
+      "label": "primary/printed/4x4/5.json",
+      "source": "printed",
+      "split": "test",
+      "size": 4,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-4x4-06",
+      "file": "primary/printed/4x4/6.jpeg",
+      "label": "primary/printed/4x4/6.json",
+      "source": "printed",
+      "split": "test",
+      "size": 4,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-6x6-01",
+      "file": "primary/printed/6x6/1.jpeg",
+      "label": "primary/printed/6x6/1.json",
+      "source": "printed",
+      "split": "test",
+      "size": 6,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-6x6-02",
+      "file": "primary/printed/6x6/2.jpeg",
+      "label": "primary/printed/6x6/2.json",
+      "source": "printed",
+      "split": "test",
+      "size": 6,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-6x6-03",
+      "file": "primary/printed/6x6/3.jpeg",
+      "label": "primary/printed/6x6/3.json",
+      "source": "printed",
+      "split": "test",
+      "size": 6,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-6x6-04",
+      "file": "primary/printed/6x6/4.jpeg",
+      "label": "primary/printed/6x6/4.json",
+      "source": "printed",
+      "split": "test",
+      "size": 6,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-6x6-05",
+      "file": "primary/printed/6x6/5.jpeg",
+      "label": "primary/printed/6x6/5.json",
+      "source": "printed",
+      "split": "test",
+      "size": 6,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-6x6-06",
+      "file": "primary/printed/6x6/6.jpeg",
+      "label": "primary/printed/6x6/6.json",
+      "source": "printed",
+      "split": "test",
+      "size": 6,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-8x8-01",
+      "file": "primary/printed/8x8/1.jpeg",
+      "label": "primary/printed/8x8/1.json",
+      "source": "printed",
+      "split": "test",
+      "size": 8,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-8x8-02",
+      "file": "primary/printed/8x8/2.jpeg",
+      "label": "primary/printed/8x8/2.json",
+      "source": "printed",
+      "split": "test",
+      "size": 8,
+      "label_source": "manual",
+      "verified": true
+    },
+    {
+      "id": "printed-8x8-03",
+      "file": "primary/printed/8x8/3.jpeg",
+      "label": "primary/printed/8x8/3.json",
+      "source": "printed",
+      "split": "test",
+      "size": 8,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-8x8-04",
+      "file": "primary/printed/8x8/4.jpeg",
+      "label": "primary/printed/8x8/4.json",
+      "source": "printed",
+      "split": "test",
+      "size": 8,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-8x8-05",
+      "file": "primary/printed/8x8/5.jpeg",
+      "label": "primary/printed/8x8/5.json",
+      "source": "printed",
+      "split": "test",
+      "size": 8,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "printed-8x8-06",
+      "file": "primary/printed/8x8/6.jpeg",
+      "label": "primary/printed/8x8/6.json",
+      "source": "printed",
+      "split": "test",
+      "size": 8,
+      "label_source": "draft",
+      "verified": true
+    },
+    {
+      "id": "synthetic-3x3-01",
+      "file": "secondary/synthetic/3x3/1.jpg",
+      "label": "secondary/synthetic/3x3/1.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 3,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-3x3-02",
+      "file": "secondary/synthetic/3x3/2.jpg",
+      "label": "secondary/synthetic/3x3/2.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 3,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-3x3-03",
+      "file": "secondary/synthetic/3x3/3.jpg",
+      "label": "secondary/synthetic/3x3/3.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 3,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-3x3-04",
+      "file": "secondary/synthetic/3x3/4.jpg",
+      "label": "secondary/synthetic/3x3/4.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 3,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-4x4-01",
+      "file": "secondary/synthetic/4x4/1.jpg",
+      "label": "secondary/synthetic/4x4/1.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 4,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-4x4-02",
+      "file": "secondary/synthetic/4x4/2.jpg",
+      "label": "secondary/synthetic/4x4/2.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 4,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-4x4-03",
+      "file": "secondary/synthetic/4x4/3.jpg",
+      "label": "secondary/synthetic/4x4/3.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 4,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-4x4-04",
+      "file": "secondary/synthetic/4x4/4.jpg",
+      "label": "secondary/synthetic/4x4/4.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 4,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-5x5-01",
+      "file": "secondary/synthetic/5x5/1.jpg",
+      "label": "secondary/synthetic/5x5/1.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 5,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-5x5-02",
+      "file": "secondary/synthetic/5x5/2.jpg",
+      "label": "secondary/synthetic/5x5/2.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 5,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-5x5-03",
+      "file": "secondary/synthetic/5x5/3.jpg",
+      "label": "secondary/synthetic/5x5/3.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 5,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-5x5-04",
+      "file": "secondary/synthetic/5x5/4.jpg",
+      "label": "secondary/synthetic/5x5/4.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 5,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-6x6-01",
+      "file": "secondary/synthetic/6x6/1.jpg",
+      "label": "secondary/synthetic/6x6/1.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 6,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-6x6-02",
+      "file": "secondary/synthetic/6x6/2.jpg",
+      "label": "secondary/synthetic/6x6/2.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 6,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-6x6-03",
+      "file": "secondary/synthetic/6x6/3.jpg",
+      "label": "secondary/synthetic/6x6/3.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 6,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-6x6-04",
+      "file": "secondary/synthetic/6x6/4.jpg",
+      "label": "secondary/synthetic/6x6/4.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 6,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-7x7-01",
+      "file": "secondary/synthetic/7x7/1.jpg",
+      "label": "secondary/synthetic/7x7/1.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 7,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-7x7-02",
+      "file": "secondary/synthetic/7x7/2.jpg",
+      "label": "secondary/synthetic/7x7/2.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 7,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-7x7-03",
+      "file": "secondary/synthetic/7x7/3.jpg",
+      "label": "secondary/synthetic/7x7/3.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 7,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-7x7-04",
+      "file": "secondary/synthetic/7x7/4.jpg",
+      "label": "secondary/synthetic/7x7/4.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 7,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-8x8-01",
+      "file": "secondary/synthetic/8x8/1.jpg",
+      "label": "secondary/synthetic/8x8/1.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 8,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-8x8-02",
+      "file": "secondary/synthetic/8x8/2.jpg",
+      "label": "secondary/synthetic/8x8/2.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 8,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-8x8-03",
+      "file": "secondary/synthetic/8x8/3.jpg",
+      "label": "secondary/synthetic/8x8/3.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 8,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-8x8-04",
+      "file": "secondary/synthetic/8x8/4.jpg",
+      "label": "secondary/synthetic/8x8/4.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 8,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-9x9-01",
+      "file": "secondary/synthetic/9x9/1.jpg",
+      "label": "secondary/synthetic/9x9/1.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 9,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-9x9-02",
+      "file": "secondary/synthetic/9x9/2.jpg",
+      "label": "secondary/synthetic/9x9/2.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 9,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-9x9-03",
+      "file": "secondary/synthetic/9x9/3.jpg",
+      "label": "secondary/synthetic/9x9/3.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 9,
+      "label_source": "generated",
+      "verified": true
+    },
+    {
+      "id": "synthetic-9x9-04",
+      "file": "secondary/synthetic/9x9/4.jpg",
+      "label": "secondary/synthetic/9x9/4.json",
+      "source": "synthetic",
+      "split": "synthetic",
+      "size": 9,
+      "label_source": "generated",
+      "verified": true
+    }
+  ]
+}
