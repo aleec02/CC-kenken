@@ -96,11 +96,31 @@ def split_glyph(g: Glyph, k: int) -> list[Glyph]:
     return [q for q in parts if q is not None]
 
 
+def _cut_at(g: Glyph, x: int) -> list[Glyph]:
+    parts = [_tight(g.mask[:, :x], g.x, g.y), _tight(g.mask[:, x:], g.x + x, g.y)]
+    return [q for q in parts if q is not None]
+
+
+def two_part_cuts(g: Glyph, max_cuts: int = 4) -> list[int]:
+    """Candidate columns to cut a component in two: the low-ink columns of its central
+    part. A digit touching a dash ("3—") has many equally thin columns along the dash,
+    so several cuts are proposed and the classifier chooses (segmentation by recognition)."""
+    cols = g.mask.sum(axis=0).astype(np.float32)
+    lo, hi = int(0.2 * g.w), int(0.8 * g.w)
+    if hi - lo < 2:
+        return []
+    low = [x for x in range(lo, hi) if cols[x] <= 1.25 * cols[lo:hi].min() + 1]
+    if len(low) > max_cuts:
+        low = [low[round(i * (len(low) - 1) / (max_cuts - 1))] for i in range(max_cuts)]
+    return low
+
+
 def split_candidates(g: Glyph, ref_h: int) -> list[list[Glyph]]:
-    """Alternative segmentations of a possibly-fused component: as is, or split into
-    2 or 3 characters when it is wide enough to contain them."""
+    """Alternative segmentations of a possibly-fused component: as is, split in two at
+    each candidate cut, or split into 3 characters when it is wide enough."""
     options = [[g]]
     if g.h >= 0.6 * ref_h and g.w > 0.85 * g.h:
+        options += [opt for x in two_part_cuts(g) if len(opt := _cut_at(g, x)) == 2]
         options.append(split_glyph(g, 2))
         if g.w > 1.5 * g.h:
             options.append(split_glyph(g, 3))
@@ -278,28 +298,61 @@ def clue_ink(gray_crop: np.ndarray) -> np.ndarray:
     return (gray_crop < thr).astype(np.uint8) * 255
 
 
-def _resolve_fused(glyphs: list[Glyph], ref_h: int) -> list[Glyph]:
+SPLIT_PENALTY = 1.4   # cost factor of splitting a component (vs keeping it whole)
+
+
+def _grammar_violations(labels: list[str], expect_op: bool) -> int:
+    """Glyphs whose best class breaks the clue grammar  digits+ [op]  (an operator
+    before the last position, or a digit/operator where the other is required)."""
+    bad = 0
+    for i, lab in enumerate(labels):
+        if i < len(labels) - 1 or not expect_op or len(labels) == 1:
+            bad += not lab.isdigit()
+        else:
+            bad += lab.isdigit()
+    return bad
+
+
+def _resolve_fused(glyphs: list[Glyph], ref_h: int, expect_op: bool = True) -> list[Glyph]:
     """Blur or kerning can fuse neighbouring characters ("5-" -> one blob). For every
-    wide component, keep the segmentation (unsplit / split in 2 / split in 3) whose
-    pieces are closest to the training glyphs (mean nearest-neighbour distance)."""
+    wide component, choose among the candidate segmentations (unsplit, cut in two at
+    several low-ink columns, split in 3) the one whose pieces are closest to the
+    training glyphs (mean nearest-neighbour distance), penalizing segmentations that
+    break the clue grammar (e.g. a long dash cut into two dashes).
+
+    The other glyphs of the clue are classified once and all candidate pieces are scored
+    in a single batched k-NN query (geometry relative to the clue's tallest glyph)."""
     clf = get_classifier()
+    ref = max(glyphs, key=lambda q: q.h)
+    ref_cy = ref.y + ref.h / 2
+
+    def classify(items: list[Glyph]) -> tuple[list[str], list[float]]:
+        votes, dist = clf.votes(np.stack([glyph_features(q, ref.h, ref_cy) for q in items]))
+        return [CLASSES[i] for i in votes.argmax(axis=1)], dist
+
+    base, _ = classify(glyphs)
+    label = {id(g): lab for g, lab in zip(glyphs, base)}
     result = list(glyphs)
     for g in glyphs:
         options = split_candidates(g, ref_h)
         if len(options) == 1:
             continue
-        best, best_cost = options[0], None
+        pieces = [q for opt in options for q in opt]
+        piece_labels, piece_dist = classify(pieces)
+        best, best_cost, k = options[0], None, 0
         for j, opt in enumerate(options):
-            trial = [q for q in result if q is not g] + opt
-            trial.sort(key=lambda q: q.x)
-            clf.predict(_clue_features(trial))
-            d = clf.last_distances
-            cost = float(np.mean([d[trial.index(q)] for q in opt]))
-            cost *= 1.0 if j == 0 else 1.1  # prefer not splitting when in doubt
+            labels_opt, dist_opt = piece_labels[k:k + len(opt)], piece_dist[k:k + len(opt)]
+            k += len(opt)
+            others = [q for q in result if q is not g]
+            trial = sorted([(q.x, label[id(q)]) for q in others] + [(q.x, lab) for q, lab in zip(opt, labels_opt)])
+            cost = float(np.mean(dist_opt))
+            cost *= 1.0 if j == 0 else SPLIT_PENALTY  # prefer not splitting when in doubt
+            cost *= 1 + _grammar_violations([lab for _, lab in trial], expect_op)
             if best_cost is None or cost < best_cost:
-                best, best_cost = opt, cost
-        result = [q for q in result if q is not g] + best
-        result.sort(key=lambda q: q.x)
+                best, best_cost, best_labels = opt, cost, labels_opt
+        for q, lab in zip(best, best_labels):
+            label[id(q)] = lab
+        result = sorted([q for q in result if q is not g] + best, key=lambda q: q.x)
     return result
 
 
@@ -367,7 +420,7 @@ def read_clue(gray_crop: np.ndarray, cell_px: float, expect_op: bool = True) -> 
     glyphs = clue_glyphs(gray_crop, cell_px)
     if not glyphs:
         return ClueReading("", None, "?", 0.0)
-    glyphs = _resolve_fused(glyphs, max(g.h for g in glyphs))
+    glyphs = _resolve_fused(glyphs, max(g.h for g in glyphs), expect_op)
     votes, _ = get_classifier().votes(_clue_features(glyphs))
     nbest = _nbest(votes, expect_op)
     if not nbest:
