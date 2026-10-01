@@ -1,12 +1,12 @@
-"""Phase 3: project the solution back onto the photo, and draw a clean solved board."""
+"""Phase 3 images: the solution projected onto the input photo, and the debug view of
+what the vision step detected."""
 
 from __future__ import annotations
 
 import cv2
 import numpy as np
 
-from .render import RenderStyle, render_puzzle
-from .vision.extract import Extraction
+from .extract import Extraction
 
 
 def overlay_solution(original_bgr: np.ndarray, ex: Extraction, grid: list[list[int]],
@@ -44,17 +44,24 @@ def overlay_solution(original_bgr: np.ndarray, ex: Extraction, grid: list[list[i
     return out.astype(np.uint8)
 
 
-def clean_board(ex: Extraction, grid: list[list[int]]) -> np.ndarray:
-    """Clean redrawn board (BGR) with the clues and the solution."""
-    rgb = render_puzzle(ex.puzzle, RenderStyle(cell=90), solution=grid)
-    return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
-
-
-def side_by_side(left: np.ndarray, right: np.ndarray, height: int = 720) -> np.ndarray:
-    def fit(img):
-        f = height / img.shape[0]
-        return cv2.resize(img, (int(img.shape[1] * f), height), interpolation=cv2.INTER_AREA)
-
-    a, b = fit(left), fit(right)
-    gap = np.full((height, 16, 3), 255, np.uint8)
-    return np.hstack([a, gap, b])
+def debug_image(ex: Extraction) -> np.ndarray:
+    """Rectified grid with detected thick borders (red) and OCR readings (blue)."""
+    n, rect = ex.topology.n, ex.rect
+    img = cv2.cvtColor(rect.gray, cv2.COLOR_GRAY2BGR)
+    cell = rect.size / n
+    m = rect.margin
+    for r in range(n):
+        for c in range(n - 1):
+            if ex.topology.v_thick[r, c]:
+                x = int(m + (c + 1) * cell)
+                cv2.line(img, (x, int(m + r * cell)), (x, int(m + (r + 1) * cell)), (0, 0, 255), 3)
+    for r in range(n - 1):
+        for c in range(n):
+            if ex.topology.h_thick[r, c]:
+                y = int(m + (r + 1) * cell)
+                cv2.line(img, (int(m + c * cell), y), (int(m + (c + 1) * cell), y), (0, 0, 255), 3)
+    for (r, c), cage in zip(ex.clue_cells, ex.puzzle.cages):
+        org = (int(m + c * cell + 0.1 * cell), int(m + r * cell + 0.8 * cell))
+        cv2.putText(img, cage.label.replace("−", "-").replace("×", "x").replace("÷", "/"),
+                    org, cv2.FONT_HERSHEY_SIMPLEX, cell / 110, (200, 80, 0), 2, cv2.LINE_AA)
+    return img

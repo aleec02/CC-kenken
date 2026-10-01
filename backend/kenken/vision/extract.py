@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-import cv2
 import numpy as np
 
-from ..puzzle import Cage, Puzzle
-from ..solver import _cage_tuples
+from ..core.cp import tuplas_validas
+from ..core.puzzle import Cage, Puzzle
 from .grid import GridTopology, detect_topology, merge_across_weakest_border
 from .ocr import ClueReading, clue_glyphs, read_clue
 from .preprocess import Rectified, rectify, resize_max
@@ -87,7 +86,7 @@ def _repair(cage_cells, reading: ClueReading, n: int, warnings: list[str]) -> Ca
         warnings.append(f"cage {min(cage_cells)}: '{op}' on {k} cells, operator set to unknown")
         op = "?"
     cage = Cage(target, op, cage_cells)
-    if op != "?" and n ** k <= 200_000 and not _cage_tuples(cage, n):
+    if op != "?" and n ** k <= 200_000 and not tuplas_validas(cage, n):
         warnings.append(f"cage {min(cage_cells)}: '{reading.text}' is unsatisfiable, operator set to unknown")
         cage = Cage(target, "?", cage_cells)
     if op == "?":
@@ -118,7 +117,7 @@ def _alternatives(cells, reading: ClueReading, primary: Cage, n: int) -> list[tu
         extra = UNKNOWN_OP_PENALTY if len(ops) > 1 else 0.0
         for o in ops:
             concrete = Cage(target, o, cells)
-            if n ** k <= 200_000 and not _cage_tuples(concrete, n):
+            if n ** k <= 200_000 and not tuplas_validas(concrete, n):
                 continue
             key = (target, o)
             best[key] = min(best.get(key, np.inf), cost + extra)
@@ -146,26 +145,3 @@ def extract_puzzle(img_bgr: np.ndarray, n: int | None = None) -> Extraction:
 
     puzzle = Puzzle(topo.n, cages)
     return Extraction(puzzle, rect, topo, readings, clue_cells, scale, warnings, alternatives)
-
-
-def debug_image(ex: Extraction) -> np.ndarray:
-    """Rectified grid with detected thick borders (red) and OCR readings (blue)."""
-    n, rect = ex.topology.n, ex.rect
-    img = cv2.cvtColor(rect.gray, cv2.COLOR_GRAY2BGR)
-    cell = rect.size / n
-    m = rect.margin
-    for r in range(n):
-        for c in range(n - 1):
-            if ex.topology.v_thick[r, c]:
-                x = int(m + (c + 1) * cell)
-                cv2.line(img, (x, int(m + r * cell)), (x, int(m + (r + 1) * cell)), (0, 0, 255), 3)
-    for r in range(n - 1):
-        for c in range(n):
-            if ex.topology.h_thick[r, c]:
-                y = int(m + (r + 1) * cell)
-                cv2.line(img, (int(m + c * cell), y), (int(m + (c + 1) * cell), y), (0, 0, 255), 3)
-    for (r, c), cage, reading in zip(ex.clue_cells, ex.puzzle.cages, ex.readings):
-        org = (int(m + c * cell + 0.1 * cell), int(m + r * cell + 0.8 * cell))
-        cv2.putText(img, cage.label.replace("−", "-").replace("×", "x").replace("÷", "/"),
-                    org, cv2.FONT_HERSHEY_SIMPLEX, cell / 110, (200, 80, 0), 2, cv2.LINE_AA)
-    return img

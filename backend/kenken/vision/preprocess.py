@@ -22,13 +22,31 @@ class Rectified:
     margin: int = WARP_MARGIN
 
 
-def load_image(path: str) -> np.ndarray:
-    # np.fromfile + imdecode supports non-ASCII paths on Windows.
-    data = np.fromfile(path, dtype=np.uint8)
-    img = cv2.imdecode(data, cv2.IMREAD_COLOR)
+PDF_DPI = 200        # resolution used to rasterize PDF puzzles
+SUPPORTED_EXTENSIONS = (".png", ".jpg", ".jpeg", ".bmp", ".webp", ".pdf")
+
+
+def decode_image(data: bytes, filename: str = "") -> np.ndarray:
+    """Decode an uploaded file (PNG/JPEG/... or PDF, first page) into a BGR image."""
+    if filename.lower().endswith(".pdf") or data[:5] == b"%PDF-":
+        import pymupdf  # imported lazily: only needed for PDF input
+
+        with pymupdf.open(stream=data, filetype="pdf") as doc:
+            if doc.page_count == 0:
+                raise ValueError("The PDF has no pages")
+            pix = doc[0].get_pixmap(dpi=PDF_DPI, colorspace=pymupdf.csRGB, alpha=False)
+            rgb = np.frombuffer(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
+            return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+    img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
     if img is None:
-        raise ValueError(f"Cannot read image: {path}")
+        raise ValueError(f"Cannot decode image {filename!r} (supported: {', '.join(SUPPORTED_EXTENSIONS)})")
     return img
+
+
+def load_image(path: str) -> np.ndarray:
+    """Read an image or PDF from disk (works with non-ASCII paths on Windows)."""
+    with open(path, "rb") as f:
+        return decode_image(f.read(), str(path))
 
 
 def resize_max(img: np.ndarray, max_side: int = 1600) -> tuple[np.ndarray, float]:
