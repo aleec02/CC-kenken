@@ -37,8 +37,8 @@ kenken serve                                                      # API on http:
 
 1. **Vision** — illumination correction, adaptive binarization, grid localization and perspective
    correction (homography); grid size from line coverage; thin/thick borders by line ink mass (2-means);
-   cages by union-find; clue OCR with a k-NN glyph classifier (fonts + real glyphs), clue grammar
-   `digits+ op` and N-best readings.
+   cages by union-find; clue OCR with a k-NN glyph classifier (fonts + real glyphs), segmentation by
+   recognition for touching glyphs, clue grammar `digits+ op` and N-best readings.
 2. **Constraint programming** — `AllDifferent` rows/columns, sum and multiplication global
    constraints, reified constraints for `−`, `÷` and unreadable operators, optional table encoding,
    uniqueness check; a COP picks the most likely valid readings when the OCR result is infeasible.
@@ -49,9 +49,15 @@ kenken serve                                                      # API on http:
 
 | Split | Images | Grid size | Cages | Clues | Solved end-to-end |
 |---|---|---|---|---|---|
-| **test** — printed photos (held out) | 18 | 100% | 100% | 99.7% | **94.4%** (17/18) |
+| **test** — printed photos | 18 | 100% | 100% | 100% | **100%** (18/18) |
 | dev — digital PDFs (used for OCR training) | 12 | 100% | 100% | 100% | 100% |
-| synthetic — generated, photo-like augmentation | 28 | 100% | 100% | 93.6% | 78.6% |
+| synthetic — generated, photo-like augmentation | 28 | 100% | 100% | 93.6% | 82.1% |
 
-Mean time per photo: ~0.5 s vision + ~15–30 ms solver. Test failure: `printed-8x8-02`, a clue
-`3−` read as `30−`.
+Mean time per photo: ~0.5 s vision + ~15–30 ms solver.
+
+**Evaluation note.** The first evaluation of the held-out test split gave **17/18 (94.4%)**, clues 99.7%:
+in `printed-8x8-02` the clue `3−` was read as `30−` because the digit and the dash touch and were cut
+in the wrong place. After this error analysis *on the test split*, glyph segmentation was changed to
+"segmentation by recognition" (several cut positions scored by the classifier and the clue grammar);
+its only parameter (`SPLIT_PENALTY`) was tuned on the synthetic and dev splits only. The 18/18 above
+is therefore no longer a fully unbiased estimate — report both numbers.
