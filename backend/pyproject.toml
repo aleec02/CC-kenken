@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kenken"
+version = "1.0.0"
+description = "KenKen solver: computer vision + constraint programming (CC58 Topicos en Ciencias de la Computacion)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26",
+    "opencv-python>=4.8",
+    "pillow>=10.1",
+    "pymupdf>=1.24",
+    "ortools>=9.10",
+    "pydantic>=2.5",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "python-multipart>=0.0.9",
+    "typer>=0.12",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.5"]
+
+[project.scripts]
+kenken = "kenken.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["kenken*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B"]
+ignore = ["B008", "B905"]   # B008: typer/fastapi defaults by design; B905: zip(strict=) not required
