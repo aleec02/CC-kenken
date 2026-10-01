@@ -1,8 +1,21 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
-output/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
 
-# course material (not part of the project)
-*.pdf
-Screenshot*.png
+# generated (rebuild with the kenken CLI)
+output/
+review/
+backend/models/
+
+# frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.env*.local
+
+# course material at the repository root (not part of the project)
+/*.pdf
+/Screenshot*.png

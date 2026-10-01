@@ -69,6 +69,17 @@ class Cage:
             return ["="]
         return ["+", "*", "-", "/"] if len(self.cells) == 2 else ["+", "*"]
 
+    def resolved(self, values: list[int]) -> Cage:
+        """For an unknown operator ("?"), the cage with the operator that the solved
+        values satisfy; otherwise the cage itself."""
+        if self.op != "?":
+            return self
+        for op in self.candidate_ops():
+            cage = Cage(self.target, op, self.cells)
+            if cage.evaluate(values):
+                return cage
+        return self
+
     def evaluate(self, values: list[int]) -> bool:
         if self.op == "?":
             return any(Cage(self.target, op, self.cells).evaluate(values) for op in self.candidate_ops())
