@@ -19,3 +19,7 @@ frontend/.env*.local
 # course material at the repository root (not part of the project)
 /*.pdf
 /Screenshot*.png
+
+# local archives and HTML previews (e.g. pandoc README.html)
+*.rar
+/*.html
