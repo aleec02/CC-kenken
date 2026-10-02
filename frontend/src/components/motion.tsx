@@ -26,7 +26,8 @@ interface RevealProps {
   mode?: "mount" | "view";
 }
 
-const viewport = { once: true, margin: "-40px" } as const;
+// Dispara la entrada en cuanto el elemento asoma por el borde inferior: sin pop tardío.
+const viewport = { once: true, margin: "0px 0px -60px 0px" } as const;
 
 function trigger(mode: "mount" | "view") {
   return mode === "mount"

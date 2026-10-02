@@ -137,7 +137,7 @@ export default function KenKenMockup({ className }: { className?: string }) {
 
         {/* dígitos de la solución */}
         <AnimatePresence>
-          {ORDER.slice(0, filled).map(([r, c]) => (
+          {ORDER.slice(0, filled).map(([r, c], i) => (
             <motion.text
               key={`${r}-${c}`}
               x={PAD + c * CELL + CELL / 2}
@@ -149,7 +149,8 @@ export default function KenKenMockup({ className }: { className?: string }) {
               fontFamily="var(--font-geist-mono), ui-monospace, monospace"
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.35 } }}
+              // la última celda rellenada se apaga primero: se "desresuelve" sin parpadeo
+              exit={{ opacity: 0, transition: { duration: 0.28, delay: (ORDER.length - 1 - i) * 0.045 } }}
               transition={{ type: "spring", stiffness: 520, damping: 28 }}
               style={{ transformOrigin: `${PAD + c * CELL + CELL / 2}px ${PAD + r * CELL + CELL / 2}px`, transformBox: "view-box" }}
             >
