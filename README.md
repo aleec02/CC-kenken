@@ -30,18 +30,8 @@ interfaz Next.js) o desde una **línea de comandos** (`kenken`) que se comporta 
 
 ---
 
-## 1. Equipo
 
-| Integrante | Rol |
-|---|---|
-| _Integrante 1_ | Visión computacional (Fase 1) |
-| _Integrante 2_ | Modelo de programación con restricciones (Fase 2) |
-| _Integrante 3_ | Integración, visualización e interfaz web (Fase 3) |
-| _Integrante 4_ | Dataset y etiquetado |
-
----
-
-## 2. Entregables y rúbrica
+## 1. Entregables y rúbrica
 
 | Entregable | Dónde |
 |---|---|
@@ -64,7 +54,7 @@ interfaz Next.js) o desde una **línea de comandos** (`kenken`) que se comporta 
 
 ---
 
-## 3. Inicio rápido
+## 2. Inicio rápido
 
 ### Requisitos
 
@@ -130,7 +120,7 @@ Total 1203 ms (vision 957 ms, solver 26.6 ms)
 
 ---
 
-## 4. Arquitectura
+## 3. Arquitectura
 
 ```
 foto / PDF ──► Fase 1: visión ──► puzzle (JSON) ──► Fase 2: modelo CP ──► solución ──► Fase 3: imágenes
@@ -185,7 +175,7 @@ CC-kenken/
 
 ---
 
-## 5. Fase 1 — Visión computacional
+## 4.  Fase 1: Visión Computacional e IA (Extracción de Datos)
 
 Código: `backend/kenken/vision/`. Entrada: imagen (`.png .jpg .jpeg .webp .bmp`) o PDF (primera página
 rasterizada a 200 dpi). Salida: el puzzle en JSON (`size`, `cages`) + lecturas alternativas de cada pista.
@@ -226,12 +216,12 @@ kenkenpuzzle.com) con rotación, desenfoque, ruido y baja resolución, + 467 gli
 
 ---
 
-## 6. Fase 2 — Programación con restricciones
+## 5.  Fase 2: Constraint Programming (Modelado y Resolución)
 
 Código: `backend/kenken/core/cp.py`, escrito con la estructura de los códigos del curso
 (`#crear CSP`, `#variables y dominios`, `#restricciones`, `#función objetivo`, `#crear solver`).
 
-### 6.1 Modelo formal (CSP)
+### 5.1 Modelo formal (CSP)
 
 - **X**: `grilla[i][j]`, el valor de la celda (i, j), para i, j ∈ {0, …, N−1}.
 - **D**: `grilla[i][j] ∈ {1, …, N}`.
@@ -266,7 +256,7 @@ for j in range(n):
     model.AddAllDifferent([grilla[i][j] for i in range(n)])   # C2
 ```
 
-### 6.2 Resolución y unicidad
+### 5.2 Resolución y unicidad
 
 - **Una solución + walltime**: `cp_model.CpSolver()`, `Solve`, estado `OPTIMAL`/`FEASIBLE`, tiempo con
   `solver.WallTime()`, límite de tiempo y 8 *workers*.
@@ -275,7 +265,7 @@ for j in range(n):
   encontrar **2 soluciones distintas**, porque eso ya prueba que no es única. Un KenKen real tiene solución
   única: `unique = false` indica casi siempre una pista mal leída.
 
-### 6.3 Por qué se necesitan restricciones reificadas
+### 5.3 Por qué se necesitan restricciones reificadas
 
 1. **`−` y `÷`**: la pista "2÷" no dice cuál celda es la mayor; "a/c = t" no es una restricción lineal
    entera. Un booleano `orden` elige el caso y cada caso se exige con `OnlyEnforceIf(orden)` /
@@ -285,7 +275,7 @@ for j in range(n):
    así que se reifica con una variable auxiliar `producto`.
 3. **COP de corrección** (§6.5): cada lectura alternativa se activa con su booleano.
 
-### 6.4 Codificaciones de las jaulas: `arith` vs `table`
+### 5.4 Codificaciones de las jaulas: `arith` vs `table`
 
 - **`arith`** (por defecto): las restricciones de la tabla de §6.1.
 - **`table`**: cada jaula es una restricción de tabla (`AddAllowedAssignments`) con todas las tuplas que
@@ -293,7 +283,7 @@ for j in range(n):
   generalizada** por jaula. Con esta codificación la propagación resuelve todas las instancias del
   benchmark **sin ramificar** ([§10.3](#103-rendimiento-del-solver)).
 
-### 6.5 COP: la restricción corrige a la visión
+### 5.5 COP: la restricción corrige a la visión
 
 Si la lectura más probable no tiene solución, se resuelve un **problema de optimización con restricciones**:
 
@@ -304,7 +294,7 @@ Si la lectura más probable no tiene solución, se resuelve un **problema de opt
 Resultado: la lectura más probable de la foto que es un KenKen válido. La API devuelve los cambios en
 `corrections` (estructura análoga al COP de coloreo mínimo de `21_2_topicoscc_4.py`).
 
-### 6.6 Otros usos de CP en el sistema
+### 5.6 Otros usos de CP en el sistema
 
 | Uso | Dónde |
 |---|---|
@@ -314,7 +304,7 @@ Resultado: la lectura más probable de la foto que es un KenKen válido. La API 
 | Hacer concreta la operación `?` según la solución (para mostrarla) | `core/puzzle.py`, `service.py` |
 | Medir el solver por N y codificación | `data/bench.py` (`kenken bench`) |
 
-### 6.7 Técnicas del curso utilizadas
+### 5.7 Técnicas del curso utilizadas
 
 | Técnica del curso | Origen | En el proyecto |
 |---|---|---|
@@ -336,7 +326,7 @@ ni de rutas; no se implementó fuerza bruta/backtracking propio como línea base
 
 ---
 
-## 7. Fase 3 — Integración y visualización
+## 6.  Fase 3: Integración y Visualización
 
 - **Integración automática**: `solve_image()` encadena visión → JSON → modelo CP (→ COP si hace falta)
   sin intervención manual; lo usan igual la API y la CLI.
@@ -349,7 +339,7 @@ ni de rutas; no se implementó fuerza bruta/backtracking propio como línea base
 
 ---
 
-## 8. Interfaces: CLI y API
+## 7. Interfaces: CLI y API
 
 Cada acción de la interfaz web es **un endpoint** y **un comando**, con el mismo nombre, las mismas opciones y
 **el mismo JSON** (un test lo verifica):
@@ -361,7 +351,7 @@ Cada acción de la interfaz web es **un endpoint** y **un comando**, con el mism
 | Todo en un paso | `POST /api/solve-image` | `kenken solve-image ARCHIVO` |
 | Versión / estado | `GET /api/health` | `kenken --version` |
 
-### 8.1 CLI
+### 7.1 CLI
 
 ```
 kenken extract ARCHIVO        Fase 1: imagen/PDF -> puzzle
@@ -399,7 +389,7 @@ kenken solve puzzle.json                                              # ...y res
 kenken solve-image foto.jpg --encoding table --out output             # todo en un paso
 ```
 
-### 8.2 API (contrato)
+### 7.2 API (contrato)
 
 `kenken serve` → `http://127.0.0.1:8000` · documentación interactiva `/docs` · esquema `/openapi.json`.
 
@@ -516,7 +506,7 @@ Todos los errores tienen la forma `ErrorResponse`:
 | 422 | (lista `detail` de FastAPI) | la petición no cumple el esquema (p. ej. `size: 12`) | 2 |
 | 200 | — | puzzle válido sin solución: `solved: false` | 1 |
 
-### 8.3 Frontend (Next.js)
+### 7.3 Frontend (Next.js)
 
 ```bash
 # .env.local
@@ -554,7 +544,7 @@ export async function solveImage(file: File): Promise<SolveImageResponse> {
 
 ---
 
-## 9. Datos
+## 8. Datos
 
 | Carpeta | Origen | Muestras | Split | Etiquetas |
 |---|---|---|---|---|
@@ -576,7 +566,7 @@ export async function solveImage(file: File): Promise<SolveImageResponse> {
 - `synthetic` es para pruebas de estrés y para ajustar parámetros.
 - Los archivos originales nunca se modifican; cada muestra tiene una etiqueta hermana `<k>.json`.
 
-### 9.1 Estructura y manifiesto
+### 8.1 Estructura y manifiesto
 
 ```
 data/
@@ -589,7 +579,7 @@ data/
 Identificadores: `<fuente>-<N>x<N>-<k>`, p. ej. `printed-8x8-02`. La carpeta de datos se puede cambiar
 con la variable de entorno `KENKEN_DATA`.
 
-### 9.2 Formato de etiqueta
+### 8.2 Formato de etiqueta
 
 El mismo esquema de puzzle de la API, más la solución y metadatos:
 
@@ -607,7 +597,7 @@ El mismo esquema de puzzle de la API, más la solución y metadatos:
 `generated` (sintética). Toda etiqueta verificada es un puzzle válido con **solución única igual a
 `solution`** (lo comprueba `tests/test_data.py`).
 
-### 9.3 Cómo se crearon las etiquetas
+### 8.3 Cómo se crearon las etiquetas
 
 - **Digitales**: los PDFs son vectoriales: los bordes de jaula son rectángulos rellenos gruesos y las pistas
   son texto (dígitos en Arial Black, operaciones en Trebuchet MS Bold) con su posición, así que se leen
@@ -617,7 +607,7 @@ El mismo esquema de puzzle de la API, más la solución y metadatos:
   CP única. 17/18 borradores eran correctos; `printed-8x8-02` tenía 11 pistas mal leídas y se corrigió a
   mano (`label_source: manual`).
 
-### 9.4 Agregar datos
+### 8.4 Agregar datos
 
 1. Copiar el archivo en `<N>x<N>/<k>.<ext>` dentro de la carpeta que corresponda.
 2. `kenken data ingest` → crea la etiqueta (exacta para PDFs, borrador para fotos) y actualiza el manifiesto.
@@ -629,11 +619,11 @@ solo con fines académicos.
 
 ---
 
-## 10. Resultados
+## 9. Resultados
 
 Todas las cifras se reproducen con los comandos de [§10.4](#104-reproducir).
 
-### 10.1 Precisión
+### 9.1 Precisión
 
 | Métrica | Definición |
 |---|---|
@@ -659,7 +649,7 @@ lugar equivocado. Tras este análisis de error *sobre el split de test* se cambi
 totalmente imparcial: **reportar ambas cifras**. El split `dev` es optimista porque sus glifos se usan
 para entrenar el OCR.
 
-### 10.2 Tiempos de respuesta
+### 9.2 Tiempos de respuesta
 
 | Etapa | Tiempo típico |
 |---|---|
@@ -667,7 +657,7 @@ para entrenar el OCR.
 | Solver (resolver + verificar unicidad) | ~15–30 ms |
 | COP de corrección (solo si hace falta) | hasta 10 s (límite) |
 
-### 10.3 Rendimiento del solver
+### 9.3 Rendimiento del solver
 
 `kenken bench --count 10`: 10 puzzles aleatorios con solución única por N, resueltos con ambas
 codificaciones (sin verificar unicidad).
@@ -688,7 +678,7 @@ codificaciones (sin verificar unicidad).
   búsqueda. El costo de `table` es generar las tuplas (exponencial en el tamaño de la jaula; se limita a
   200 000 tuplas y por encima se usa `arith`).
 
-### 10.4 Reproducir
+### 9.4 Reproducir
 
 ```bash
 kenken data eval --split test          # tabla de precisión (añadir -v para ver cada error)
@@ -699,7 +689,7 @@ kenken bench --sizes 4,5,6,7,8,9 --count 10
 
 ---
 
-## 11. Limitaciones y trabajo futuro
+## 10. Limitaciones y trabajo futuro
 
 - **Lecturas erróneas pero válidas**: si una pista mal leída sigue dando un puzzle con solución (p. ej. `3÷`
   leído `3+`), el sistema resuelve el puzzle equivocado. Señal disponible: `unique = false`.
@@ -712,7 +702,7 @@ kenken bench --sizes 4,5,6,7,8,9 --count 10
 
 ---
 
-## 12. Desarrollo
+## 11. Desarrollo
 
 ```bash
 cd backend
@@ -729,7 +719,7 @@ ruff check kenken tests      # lint
 
 ---
 
-## 13. Referencias
+## 12. Referencias
 
 - Rossi, F., van Beek, P., Walsh, T. (2006). *Handbook of Constraint Programming*. Elsevier.
 - Apt, K. R. (2003). *Principles of Constraint Programming*. Cambridge University Press.
