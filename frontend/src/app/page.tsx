@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Variants } from "framer-motion";
 import { ArrowRight, Github, Image as ImageIcon, ScanLine, Sigma } from "lucide-react";
 import KenKenMockup from "@/components/KenKenMockup";
+import FloatingCtas from "@/components/FloatingCtas";
 import { Item, Reveal, Stagger } from "@/components/motion";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -140,6 +141,8 @@ export default function Home() {
           </Stagger>
         </div>
       </section>
+
+      <FloatingCtas />
     </main>
   );
 }
