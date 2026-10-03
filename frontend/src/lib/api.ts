@@ -1,7 +1,10 @@
 // Cliente de la API del backend (contrato: README principal §7.2).
-// El backend corre con `kenken serve` en http://127.0.0.1:8000.
+// En producción el rewrite /api/* del vercel.json raíz enruta al servicio backend
+// en el mismo dominio, así que las llamadas son de mismo origen (API_URL = "").
+// Para desarrollo local, .env.local apunta NEXT_PUBLIC_API_URL al `kenken serve`
+// en http://127.0.0.1:8000.
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export const ACCEPTED_EXT = [".png", ".jpg", ".jpeg", ".webp", ".bmp", ".pdf"];
 export const MAX_BYTES = 15 * 1024 * 1024;

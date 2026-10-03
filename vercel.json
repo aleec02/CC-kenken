@@ -1,0 +1,37 @@
+{
+  "services": {
+    "backend": {
+      "root": "backend",
+      "framework": "fastapi",
+      "functions": {
+        "index.py": {
+          "memory": 1024,
+          "maxDuration": 60,
+          "excludeFiles": "{tests/**,kenken.egg-info/**,debug_clues/**,README.md}"
+        }
+      }
+    },
+    "frontend": {
+      "root": "frontend",
+      "framework": "nextjs"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": { "service": "backend" }
+    },
+    {
+      "source": "/docs(.*)",
+      "destination": { "service": "backend" }
+    },
+    {
+      "source": "/openapi.json",
+      "destination": { "service": "backend" }
+    },
+    {
+      "source": "/(.*)",
+      "destination": { "service": "frontend" }
+    }
+  ]
+}
