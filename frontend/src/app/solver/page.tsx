@@ -6,7 +6,7 @@ import {
   AlertTriangle, Check, Download, FileText, Image as ImageIcon, Loader2, RotateCcw, Upload, X,
 } from "lucide-react";
 import {
-  ACCEPTED_EXT, API_URL, ApiError, health, solveImage, validateFile, type SolveImageResponse,
+  ACCEPTED_EXT, API_URL, ApiError, health, prepareUpload, solveImage, validateFile, type SolveImageResponse,
 } from "@/lib/api";
 import { Item, Stagger } from "@/components/motion";
 
@@ -16,7 +16,7 @@ type View = "overlay" | "board" | "debug";
 const ease = [0.22, 1, 0.36, 1] as const;
 
 // Mensajes que rotan mientras el servidor trabaja.
-const PROGRESS = ["Subiendo el archivo…", "Buscando el tablero…", "Leyendo las pistas…", "Resolviendo el puzzle…", "Dibujando la solución…"];
+const PROGRESS = ["Optimizando la imagen…", "Buscando el tablero…", "Leyendo las pistas…", "Resolviendo el puzzle…", "Dibujando la solución…"];
 
 const OP_LABEL: Record<string, string> = { "+": "+", "-": "−", "*": "×", "/": "÷", "=": "", "?": "?" };
 
@@ -75,7 +75,8 @@ export default function Solver() {
     setError(null);
     setResult(null);
     try {
-      const res = await solveImage(file, ctrl.signal);
+      const upload = await prepareUpload(file);
+      const res = await solveImage(upload, ctrl.signal);
       setResult(res);
       setView(res.images?.overlay ? "overlay" : "board");
       setPhase("done");
@@ -167,6 +168,7 @@ export default function Solver() {
                         <p className="mt-5 text-lg font-medium text-ink">Arrastra el archivo aquí</p>
                         <p className="mt-1 text-sm text-ink-2">o haz clic para elegirlo desde tu dispositivo</p>
                         <p className="mt-5 font-mono text-xs text-ink-3">PNG · JPG · WEBP · BMP · PDF · máx. 15 MB</p>
+                        <p className="mt-1 text-xs text-ink-3">Las fotos pesadas se optimizan automáticamente antes de enviarse.</p>
                       </motion.div>
                     ) : (
                       <motion.div key="file" {...fade} className="flex w-full flex-col items-center gap-5 sm:flex-row sm:text-left">

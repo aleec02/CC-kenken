@@ -6,6 +6,12 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000
 export const ACCEPTED_EXT = [".png", ".jpg", ".jpeg", ".webp", ".bmp", ".pdf"];
 export const MAX_BYTES = 15 * 1024 * 1024;
 
+// El backend serverless (Vercel) acepta como máximo 4.5 MB por petición. Las fotos que
+// superen esto se recomprimen en el navegador antes de subirlas (ver prepareUpload); los
+// PDF no se pueden recomprimir, así que se validan contra este límite directamente.
+const UPLOAD_SAFE_BYTES = 4 * 1024 * 1024;
+const RESIZE_MAX_DIM = 2000; // el backend igualmente reescala a 1600 px: no se pierde nitidez real
+
 export type Op = "+" | "-" | "*" | "/" | "=" | "?";
 
 export interface Cage { target: number; op: Op; cells: [number, number][] }
@@ -76,6 +82,10 @@ const FRIENDLY: Record<string, [string, string]> = {
     "Algunas jaulas o pistas salieron inconsistentes. Prueba con una foto más nítida o más de frente.",
   ],
   too_large: ["El archivo es demasiado grande.", "El máximo es 15 MB. Reduce la resolución o comprime la imagen."],
+  payload_too_large: [
+    "El archivo pesa demasiado para subirlo así.",
+    "Si es un PDF, prueba exportarlo más liviano o toma una foto en su lugar; las fotos se optimizan solas.",
+  ],
   bad_type: ["Ese tipo de archivo no está soportado.", "Acepta imágenes (.png, .jpg, .webp, .bmp) y PDF."],
   unknown: ["Ocurrió un error inesperado.", "Vuelve a intentarlo. Si persiste, revisa la consola del servidor."],
 };
@@ -92,6 +102,36 @@ export function validateFile(file: File): ApiError | null {
   if (file.size > MAX_BYTES) return friendly("too_large");
   if (file.size === 0) return friendly("invalid_input");
   return null;
+}
+
+/**
+ * Recomprime una foto demasiado pesada antes de subirla (reescalado + JPEG de menor
+ * calidad) para que quepa en el límite de la función serverless. Los PDF y los archivos
+ * ya livianos se devuelven sin cambios; si la compresión falla, se devuelve el original
+ * y es el servidor quien reporta el error.
+ */
+export async function prepareUpload(file: File): Promise<File> {
+  if (!file.type.startsWith("image/") || file.size <= UPLOAD_SAFE_BYTES) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, RESIZE_MAX_DIM / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    for (const quality of [0.85, 0.7, 0.55, 0.4]) {
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+      if (blob && blob.size <= UPLOAD_SAFE_BYTES) {
+        const name = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+        return new File([blob], name, { type: "image/jpeg" });
+      }
+    }
+  } catch {
+    // createImageBitmap/canvas sin soporte: seguimos con el archivo original
+  }
+  return file;
 }
 
 export async function health(signal?: AbortSignal): Promise<boolean> {
@@ -113,6 +153,7 @@ export async function solveImage(file: File, signal?: AbortSignal): Promise<Solv
     if (e instanceof DOMException && e.name === "AbortError") throw e;
     throw friendly("offline");
   }
+  if (res.status === 413) throw friendly("payload_too_large");
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const code = typeof data?.error === "string" ? data.error : "unknown";
