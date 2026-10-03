@@ -70,7 +70,7 @@ export class ApiError extends Error {
 const FRIENDLY: Record<string, [string, string]> = {
   offline: [
     "No pudimos conectar con el servidor.",
-    "Comprueba que el backend esté encendido (en una terminal: kenken serve) y vuelve a intentarlo.",
+    "Vuelve a intentarlo en unos segundos. Si estás en desarrollo local, comprueba que el backend esté encendido (`kenken serve`).",
   ],
   invalid_input: [
     "No pudimos leer ese archivo.",

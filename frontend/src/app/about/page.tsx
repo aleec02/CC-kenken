@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight, Braces, Camera, Database, Eye, GitBranch, Layers, Server, Sigma, Terminal, Wand2, Workflow,
 } from "lucide-react";
 import { Item, Reveal, Stagger } from "@/components/motion";
 import { PipelineDiagram, RuleCage, RuleCol, RuleRow } from "@/components/RuleBoards";
+
+export const metadata: Metadata = {
+  title: "Cómo funciona",
+  description: "Las reglas del KenKen, cómo lo resuelve KenKenLab y el equipo detrás del proyecto.",
+};
 
 const rules = [
   { Board: RuleRow, title: "Cada fila usa todos los números una vez", text: "En un tablero de 4×4 van del 1 al 4; en uno de 6×6, del 1 al 6. Nunca se repiten en la misma fila." },

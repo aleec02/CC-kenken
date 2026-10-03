@@ -6,7 +6,7 @@ import {
   AlertTriangle, Check, Download, FileText, Image as ImageIcon, Loader2, RotateCcw, Upload, X,
 } from "lucide-react";
 import {
-  ACCEPTED_EXT, API_URL, ApiError, health, prepareUpload, solveImage, validateFile, type SolveImageResponse,
+  ACCEPTED_EXT, ApiError, health, prepareUpload, solveImage, validateFile, type SolveImageResponse,
 } from "@/lib/api";
 import { Item, Stagger } from "@/components/motion";
 
@@ -116,11 +116,8 @@ export default function Solver() {
             <Item as="h1" className="mt-4 text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
               Sube tu KenKen
             </Item>
-            <Item className="mt-4 flex flex-col gap-3 text-ink-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="max-w-xl text-[15px] leading-7 sm:text-base">
-                Una foto del celular o un PDF. Recibirás la solución dibujada sobre tu imagen.
-              </p>
-              <ServerStatus online={online} />
+            <Item className="mt-4 max-w-xl text-[15px] leading-7 text-ink-2 sm:text-base">
+              Una foto del celular o imagen. Recibirás la solución dibujada sobre tu imagen.
             </Item>
           </Stagger>
         </div>
@@ -249,9 +246,12 @@ export default function Solver() {
                 </AnimatePresence>
 
                 {online === false && !error && (
-                  <p className="mt-6 rounded-lg border border-warn/30 bg-warn-soft p-4 text-sm leading-6 text-ink-2">
-                    El servidor no responde en <code className="font-mono">{API_URL}</code>. Enciéndelo con{" "}
-                    <code className="font-mono">kenken serve</code>; esta página lo detectará sola.
+                  <p className="mt-6 flex items-start gap-2.5 rounded-lg border border-warn/30 bg-warn-soft p-4 text-sm leading-6 text-ink-2">
+                    <span className="mt-2 inline-block h-2 w-2 shrink-0 rounded-full bg-bad" />
+                    <span>
+                      <strong className="font-medium text-ink">Servidor apagado.</strong>{" "}
+                      Revisamos la conexión automáticamente; el botón Resolver se activará solo cuando vuelva.
+                    </span>
                   </p>
                 )}
               </motion.div>
@@ -273,17 +273,6 @@ const fade = {
   exit: { opacity: 0 },
   transition: { duration: 0.2 },
 };
-
-function ServerStatus({ online }: { online: boolean | null }) {
-  const label = online === null ? "Comprobando servidor…" : online ? "Servidor conectado" : "Servidor apagado";
-  const color = online === null ? "bg-ink-3" : online ? "bg-ok" : "bg-bad";
-  return (
-    <span className="inline-flex items-center gap-2 font-mono text-xs text-ink-2">
-      <span className={`inline-block h-2 w-2 rounded-full ${color}`} />
-      {label}
-    </span>
-  );
-}
 
 function Results({
   result, view, setView, onReset, fileName,
@@ -322,7 +311,7 @@ function Results({
                 : "Resuelto"
               : solution.status === "UNKNOWN"
                 ? "Se agotó el tiempo"
-                : "Las pistas se contradicen"}
+                : "El OCR no logró identificar correctamente"}
           </h2>
           <p className="mt-2 max-w-xl text-[15px] leading-7 text-ink-2">
             {solved
@@ -331,7 +320,7 @@ function Results({
                 : `Tablero de ${n}×${n} con ${extraction.puzzle.cages.length} jaulas, resuelto en ${(timings.total_ms / 1000).toFixed(2)} s.`
               : solution.status === "UNKNOWN"
                 ? "El solver no terminó dentro del límite. Prueba con una imagen más nítida."
-                : "Leímos el tablero, pero ninguna combinación de números cumple todas las pistas. Lo más probable es que alguna se haya leído mal."}
+                : "Leímos el tablero, pero el OCR no logró descifrar todos los símbolos o números. Por favor, intenta con otra imagen."}
           </p>
         </div>
         <button onClick={onReset} className="inline-flex h-11 shrink-0 items-center gap-2 rounded-md border border-line-2 px-5 text-[15px] font-medium text-ink hover:bg-paper-2">
