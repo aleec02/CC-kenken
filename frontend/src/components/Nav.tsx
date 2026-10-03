@@ -80,14 +80,24 @@ export default function Nav() {
       <AnimatePresence>
         {open && (
           <motion.ul
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="overflow-hidden border-t border-line sm:hidden"
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            variants={{
+              hidden: { opacity: 0, y: -10 },
+              show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1], staggerChildren: 0.05, delayChildren: 0.04 } },
+              exit: { opacity: 0, y: -10, transition: { duration: 0.18, ease: "easeIn" } },
+            }}
+            className="absolute inset-x-0 top-full border-b border-line bg-paper shadow-[0_18px_30px_-22px_rgba(21,22,26,0.45)] sm:hidden"
           >
             {links.map((l) => (
-              <li key={l.href}>
+              <motion.li
+                key={l.href}
+                variants={{
+                  hidden: { opacity: 0, x: -8 },
+                  show: { opacity: 1, x: 0, transition: { duration: 0.22 } },
+                }}
+              >
                 <Link
                   href={l.href}
                   onClick={() => setOpen(false)}
@@ -97,9 +107,15 @@ export default function Nav() {
                 >
                   {l.label}
                 </Link>
-              </li>
+              </motion.li>
             ))}
-            <li className="px-5 pb-5 pt-2">
+            <motion.li
+              variants={{
+                hidden: { opacity: 0, x: -8 },
+                show: { opacity: 1, x: 0, transition: { duration: 0.22 } },
+              }}
+              className="px-5 pb-5 pt-2"
+            >
               <Link
                 href="/solver"
                 onClick={() => setOpen(false)}
@@ -107,7 +123,7 @@ export default function Nav() {
               >
                 Subir puzzle
               </Link>
-            </li>
+            </motion.li>
           </motion.ul>
         )}
       </AnimatePresence>
