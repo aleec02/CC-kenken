@@ -10,7 +10,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kenkenlab.vercel.app";
 const description =
-  "KenKenLab lee un puzzle KenKen desde una foto o PDF, lo resuelve con programación con restricciones y dibuja la solución sobre tu imagen.";
+  "KenKenLab lee un puzzle KenKen desde una foto o imagen, lo resuelve con programación con restricciones y dibuja la solución sobre tu imagen.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
