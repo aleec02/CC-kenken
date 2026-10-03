@@ -24,6 +24,8 @@ interface RevealProps {
   as?: Tag;
   /** "mount": anima al cargar (contenido visible de entrada). "view": anima al hacer scroll. */
   mode?: "mount" | "view";
+  /** Variantes personalizadas (deben ser objetos serializables: sin funciones). */
+  variants?: Variants;
 }
 
 // Dispara la entrada en cuanto el elemento asoma por el borde inferior: sin pop tardío.
@@ -36,16 +38,18 @@ function trigger(mode: "mount" | "view") {
 }
 
 /** Entrada de un bloque (al montar o al hacer scroll). */
-export function Reveal({ children, className, delay = 0, as = "div", mode = "view" }: RevealProps) {
+export function Reveal({ children, className, delay = 0, as = "div", mode = "view", variants }: RevealProps) {
   const M = motion[as];
   return (
     <M
       className={className}
       {...trigger(mode)}
-      variants={{
-        hidden: { opacity: 0, y: 16 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.55, ease, delay } },
-      }}
+      variants={
+        variants ?? {
+          hidden: { opacity: 0, y: 16 },
+          show: { opacity: 1, y: 0, transition: { duration: 0.55, ease, delay } },
+        }
+      }
     >
       {children}
     </M>
@@ -53,19 +57,19 @@ export function Reveal({ children, className, delay = 0, as = "div", mode = "vie
 }
 
 /** Contenedor que escalona la entrada de sus hijos `<Item>`. */
-export function Stagger({ children, className, as = "div", mode = "view" }: Omit<RevealProps, "delay">) {
+export function Stagger({ children, className, as = "div", mode = "view", variants }: Omit<RevealProps, "delay">) {
   const M = motion[as];
   return (
-    <M className={className} {...trigger(mode)} variants={stagger}>
+    <M className={className} {...trigger(mode)} variants={variants ?? stagger}>
       {children}
     </M>
   );
 }
 
-export function Item({ children, className, as = "div" }: Omit<RevealProps, "delay" | "mode">) {
+export function Item({ children, className, as = "div", variants }: Omit<RevealProps, "delay" | "mode">) {
   const M = motion[as];
   return (
-    <M className={className} variants={fadeUp}>
+    <M className={className} variants={variants ?? fadeUp}>
       {children}
     </M>
   );
