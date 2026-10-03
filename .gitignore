@@ -9,7 +9,8 @@ __pycache__/
 # generated (rebuild with the kenken CLI)
 output/
 review/
-backend/models/
+# backend/models/ocr_glyphs.npz IS versioned: the Vercel serverless deploy has no
+# access to Windows fonts to retrain it, and it is small (~1.6 MB).
 
 # frontend
 frontend/node_modules/
