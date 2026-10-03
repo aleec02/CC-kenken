@@ -544,22 +544,21 @@ export async function solveImage(file: File): Promise<SolveImageResponse> {
 
 ### 7.4 Despliegue serverless (Vercel)
 
-El backend se puede desplegar como función serverless en Vercel, sin un servidor `kenken serve`
-encendido permanentemente: Vercel detecta FastAPI, instala `backend/pyproject.toml` y expone
-`backend/index.py` (que solo reexporta `kenken.api:app`) como una Vercel Function.
+El repo se despliega como **un solo proyecto Vercel con dos servicios** (`vercel.json` en la
+raíz): `backend` (FastAPI como Vercel Function, detectada vía `backend/index.py` que reexporta
+`kenken.api:app`) y `frontend` (Next.js). Los rewrites enrutan `/api/*` al backend y todo lo
+demás al frontend, así que la web llama a la API en el **mismo origen**: no hace falta
+`NEXT_PUBLIC_API_URL` ni CORS en producción. `/docs` y `/openapi.json` también van al backend,
+por lo que la documentación interactiva queda pública.
 
-**Dos proyectos Vercel sobre el mismo repositorio**, cada uno con un *Root Directory* distinto:
-
-| Proyecto | Root Directory | Variables de entorno |
-|---|---|---|
-| API (backend) | `backend` | `KENKEN_CORS_ORIGINS=https://<tu-frontend>.vercel.app` |
-| Web (frontend) | `frontend` | `NEXT_PUBLIC_API_URL=https://<tu-backend>.vercel.app` |
+No se requieren variables de entorno en Vercel. Para desarrollo local, `frontend/.env.local`
+apunta `NEXT_PUBLIC_API_URL=http://127.0.0.1:8000` al `kenken serve` de siempre.
 
 Archivos involucrados (ya en el repo):
 
+- `vercel.json` (raíz) — servicios, memoria/duración de la función Python y rewrites públicos.
 - `backend/index.py` — entrypoint ASGI que Vercel reconoce (`app`); `kenken serve` sigue
   funcionando igual para desarrollo local.
-- `backend/vercel.json` — memoria/duración de la función y archivos excluidos del paquete.
 - `backend/.vercelignore` — no sube `tests/`, cachés ni artefactos de build.
 - `backend/models/ocr_glyphs.npz` — el modelo OCR **sí se versiona** (a diferencia del resto de
   `backend/models/`): el contenedor de Vercel no tiene las fuentes de Windows para reentrenarlo.
