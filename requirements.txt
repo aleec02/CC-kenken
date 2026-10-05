@@ -1,0 +1,39 @@
+# KenKen: Vision Computacional + Programacion con Restricciones (CC58)
+#
+# Instalacion (Python >= 3.10, desde la raiz del repositorio):
+#     python -m venv .venv
+#     .venv\Scripts\activate            (Windows)   |   source .venv/bin/activate   (macOS/Linux)
+#     pip install -r requirements.txt
+#     kenken data train-ocr             (opcional: el modelo OCR ya viene en backend/models/)
+#
+# Las restricciones son las mismas de backend/pyproject.toml (fuente de verdad, la usa el
+# despliegue de Vercel); tests/test_requirements.py verifica que no se desincronicen.
+# Versiones probadas: Python 3.14.6, numpy 2.5.3, ortools 9.15.6755, fastapi 0.142.2,
+# pydantic 2.13.5, pymupdf 1.28.2, pillow 12.3.0, typer 0.27.2, uvicorn 0.54.0.
+#
+# Si un entorno ya tenia "opencv-python", desinstalarlo antes (ambos proveen cv2):
+#     pip uninstall -y opencv-python
+
+# --- Vision computacional ---------------------------------------------------
+numpy>=1.26
+opencv-python-headless>=4.8
+pillow>=10.1
+pymupdf>=1.24
+
+# --- Programacion con restricciones -----------------------------------------
+ortools>=9.10
+
+# --- API web y CLI ---------------------------------------------------------
+pydantic>=2.5
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+typer>=0.12
+
+# --- Desarrollo: tests y lint ---------------------------------------------------
+pytest>=8
+httpx>=0.27
+ruff>=0.5
+
+# --- El paquete del proyecto (instala el comando "kenken") --------------------
+-e ./backend
