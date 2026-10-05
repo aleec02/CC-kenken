@@ -14,19 +14,18 @@ interfaz Next.js) o desde una **línea de comandos** (`kenken`) que se comporta 
 
 ## Contenido
 
-1. [Equipo](#1-equipo)
-2. [Entregables y rúbrica](#2-entregables-y-rúbrica)
-3. [Inicio rápido](#3-inicio-rápido)
-4. [Arquitectura](#4-arquitectura)
-5. [Fase 1 — Visión computacional](#5-fase-1--visión-computacional)
-6. [Fase 2 — Programación con restricciones](#6-fase-2--programación-con-restricciones)
-7. [Fase 3 — Integración y visualización](#7-fase-3--integración-y-visualización)
-8. [Interfaces: CLI y API](#8-interfaces-cli-y-api)
-9. [Datos](#9-datos)
-10. [Resultados](#10-resultados)
-11. [Limitaciones y trabajo futuro](#11-limitaciones-y-trabajo-futuro)
-12. [Desarrollo](#12-desarrollo)
-13. [Referencias](#13-referencias)
+1. [Entregables y rúbrica](#1-entregables-y-rúbrica)
+2. [Inicio rápido](#2-inicio-rápido)
+3. [Arquitectura](#3-arquitectura)
+4. [Fase 1 — Visión computacional](#4-fase-1--visión-computacional)
+5. [Fase 2 — Programación con restricciones](#5-fase-2--programación-con-restricciones)
+6. [Fase 3 — Integración y visualización](#6-fase-3--integración-y-visualización)
+7. [Interfaces: CLI y API](#7-interfaces-cli-y-api)
+8. [Datos](#8-datos)
+9.  [Resultados](#9-resultados)
+10. [Limitaciones y trabajo futuro](#10-limitaciones-y-trabajo-futuro)
+11. [Desarrollo](#11-desarrollo)
+12. [Referencias](#12-referencias)
 
 ---
 
