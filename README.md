@@ -17,9 +17,9 @@ interfaz Next.js) o desde una **línea de comandos** (`kenken`) que se comporta 
 1. [Entregables y rúbrica](#1-entregables-y-rúbrica)
 2. [Inicio rápido](#2-inicio-rápido)
 3. [Arquitectura](#3-arquitectura)
-4. [Fase 1 — Visión computacional](#4-fase-1--visión-computacional)
-5. [Fase 2 — Programación con restricciones](#5-fase-2--programación-con-restricciones)
-6. [Fase 3 — Integración y visualización](#6-fase-3--integración-y-visualización)
+4. [Fase 1 — Visión computacional](#4-fase-1-visión-computacional-e-ia-extracción-de-datos)
+5. [Fase 2 — Programación con restricciones](#5-fase-2-constraint-programming-modelado-y-resolución)
+6. [Fase 3 — Integración y visualización](#6-fase-3-integración-y-visualización)
 7. [Interfaces: CLI y API](#7-interfaces-cli-y-api)
 8. [Datos](#8-datos)
 9.  [Resultados](#9-resultados)
@@ -34,21 +34,21 @@ interfaz Next.js) o desde una **línea de comandos** (`kenken`) que se comporta 
 
 | Entregable | Dónde |
 |---|---|
-| Código fuente + README con instalación y ejecución | este repositorio · [Inicio rápido](#3-inicio-rápido) |
-| Dataset de prueba (≥ 10 imágenes, distintas condiciones) | `data/` · 30 reales (12 PDF + 18 fotos) + 28 sintéticas · [Datos](#9-datos) |
+| Código fuente + README con instalación y ejecución | este repositorio · [Inicio rápido](#2-inicio-rápido) |
+| Dataset de prueba (≥ 10 imágenes, distintas condiciones) | `data/` · 30 reales (12 PDF + 18 fotos) + 28 sintéticas · [Datos](#8-datos) |
 | Informe técnico (LaTeX, formato artículo) | _pendiente: enlace al PDF_ |
 | Video demostrativo (≤ 5 min) | _pendiente: enlace al video_ |
 
 | Criterio de la rúbrica | Pts | Cómo se cumple |
 |---|---|---|
-| Precisión en la detección de grilla, números y símbolos | 3 | Pipeline de visión ([§5](#5-fase-1--visión-computacional)); test: 100% grilla, jaulas y pistas ([§10](#10-resultados)) |
-| Diferentes condiciones de imagen | 1 | Fotos con perspectiva, rotación, fondo y luz variable + PDFs + sintéticas con aumentaciones ([§9](#9-datos)) |
-| Correcta formulación del problema matemático | 3 | Modelo formal X, D, C ([§6.1](#61-modelo-formal-csp)) |
-| Uso eficiente de restricciones globales | 3 | `AllDifferent`, suma, multiplicación y tabla; con tabla la propagación resuelve sin búsqueda ([§6.4](#64-codificaciones-de-las-jaulas-arith-vs-table), [§10.3](#103-rendimiento-del-solver)) |
-| Restricciones reificadas (o justificar por qué no) | 1 | Necesarias para `−`, `÷`, operación ilegible y el COP de corrección ([§6.3](#63-por-qué-se-necesitan-restricciones-reificadas)) |
-| Puente IA → CP sin intervención manual | 1 | `solve-image`: foto → JSON → modelo CP → solución, automático ([§7](#7-fase-3--integración-y-visualización)) |
-| Solución mostrada visualmente de forma clara | 1 | Solución proyectada sobre la foto + tablero limpio + vista de depuración ([§7](#7-fase-3--integración-y-visualización)) |
-| Código limpio, modular y buenas prácticas | 2 | Capas (core / vision / service / api / cli / data), tipado, tests, lint ([§4](#4-arquitectura), [§12](#12-desarrollo)) |
+| Precisión en la detección de grilla, números y símbolos | 3 | Pipeline de visión ([§4](#4-fase-1-visión-computacional-e-ia-extracción-de-datos)); test: 100% grilla, jaulas y pistas ([§9](#9-resultados)) |
+| Diferentes condiciones de imagen | 1 | Fotos con perspectiva, rotación, fondo y luz variable + PDFs + sintéticas con aumentaciones ([§8](#8-datos)) |
+| Correcta formulación del problema matemático | 3 | Modelo formal X, D, C ([§5.1](#51-modelo-formal-csp)) |
+| Uso eficiente de restricciones globales | 3 | `AllDifferent`, suma, multiplicación y tabla; con tabla la propagación resuelve sin búsqueda ([§5.4](#54-codificaciones-de-las-jaulas-arith-vs-table), [§9.3](#93-rendimiento-del-solver)) |
+| Restricciones reificadas (o justificar por qué no) | 1 | Necesarias para `−`, `÷`, operación ilegible y el COP de corrección ([§5.3](#53-por-qué-se-necesitan-restricciones-reificadas)) |
+| Puente IA → CP sin intervención manual | 1 | `solve-image`: foto → JSON → modelo CP → solución, automático ([§6](#6-fase-3-integración-y-visualización)) |
+| Solución mostrada visualmente de forma clara | 1 | Solución proyectada sobre la foto + tablero limpio + vista de depuración ([§6](#6-fase-3-integración-y-visualización)) |
+| Código limpio, modular y buenas prácticas | 2 | Capas (core / vision / service / api / cli / data), tipado, tests, lint ([§3](#3-arquitectura), [§11](#11-desarrollo)) |
 | Informe técnico en LaTeX | 5 | _pendiente_ |
 
 ---
@@ -73,8 +73,8 @@ python -m venv .venv
 .venv\Scripts\activate.bat          # Windows cmd
 source .venv/bin/activate           # macOS / Linux
 
-pip install -e "./backend[dev]"     # instala el paquete y el comando `kenken`
-kenken data train-ocr               # una sola vez (~1 min): entrena el OCR de pistas
+pip install -r requirements.txt     # dependencias + el paquete y el comando `kenken`
+kenken data train-ocr               # opcional (~1 min): el modelo OCR ya viene en backend/models/
 ```
 
 ### Primer uso
@@ -167,14 +167,14 @@ CC-kenken/
 │   │   └── data/                dataset, manifiesto, etiquetas de PDF, ingesta, OCR, evaluación, benchmark
 │   ├── tests/                   tests de CP, servicio, paridad API = CLI y consistencia del dataset
 │   └── models/                  modelo OCR entrenado (generado, no versionado)
-├── frontend/                    interfaz Next.js (consume la API, §8.3)
-├── data/                        datasets primario y secundario con etiquetas (§9)
+├── frontend/                    interfaz Next.js (consume la API, §7.3)
+├── data/                        datasets primario y secundario con etiquetas (§8)
 └── docs/img/                    figuras de este README
 ```
 
 ---
 
-## 4.  Fase 1: Visión Computacional e IA (Extracción de Datos)
+## 4. Fase 1: Visión Computacional e IA (Extracción de Datos)
 
 Código: `backend/kenken/vision/`. Entrada: imagen (`.png .jpg .jpeg .webp .bmp`) o PDF (primera página
 rasterizada a 200 dpi). Salida: el puzzle en JSON (`size`, `cages`) + lecturas alternativas de cada pista.
@@ -215,7 +215,7 @@ kenkenpuzzle.com) con rotación, desenfoque, ruido y baja resolución, + 467 gli
 
 ---
 
-## 5.  Fase 2: Constraint Programming (Modelado y Resolución)
+## 5. Fase 2: Constraint Programming (Modelado y Resolución)
 
 Código: `backend/kenken/core/cp.py`, escrito con la estructura de los códigos del curso
 (`#crear CSP`, `#variables y dominios`, `#restricciones`, `#función objetivo`, `#crear solver`).
@@ -272,15 +272,15 @@ for j in range(n):
 2. **Operación ilegible**: si el OCR no lee el símbolo, el modelo decide la operación (un booleano por
    operación, `ExactlyOne`, restricción reificada). `AddMultiplicationEquality` no acepta `OnlyEnforceIf`,
    así que se reifica con una variable auxiliar `producto`.
-3. **COP de corrección** (§6.5): cada lectura alternativa se activa con su booleano.
+3. **COP de corrección** (§5.5): cada lectura alternativa se activa con su booleano.
 
 ### 5.4 Codificaciones de las jaulas: `arith` vs `table`
 
-- **`arith`** (por defecto): las restricciones de la tabla de §6.1.
+- **`arith`** (por defecto): las restricciones de la tabla de §5.1.
 - **`table`**: cada jaula es una restricción de tabla (`AddAllowedAssignments`) con todas las tuplas que
   cumplen la aritmética y son distintas en celdas de la misma fila o columna → **consistencia de arco
   generalizada** por jaula. Con esta codificación la propagación resuelve todas las instancias del
-  benchmark **sin ramificar** ([§10.3](#103-rendimiento-del-solver)).
+  benchmark **sin ramificar** ([§9.3](#93-rendimiento-del-solver)).
 
 ### 5.5 COP: la restricción corrige a la visión
 
@@ -325,7 +325,7 @@ ni de rutas; no se implementó fuerza bruta/backtracking propio como línea base
 
 ---
 
-## 6.  Fase 3: Integración y Visualización
+## 6. Fase 3: Integración y Visualización
 
 - **Integración automática**: `solve_image()` encadena visión → JSON → modelo CP (→ COP si hace falta)
   sin intervención manual; lo usan igual la API y la CLI.
@@ -482,7 +482,7 @@ Query: `size`, `encoding`, `time_limit`, `check_unique`, `images`. Respuesta `So
 }
 ```
 
-- `corrections`: pistas cambiadas por el COP (§6.5); conviene mostrarlas al usuario.
+- `corrections`: pistas cambiadas por el COP (§5.5); conviene mostrarlas al usuario.
 - `extraction.puzzle` es el puzzle ya corregido; `extraction.detections` conserva el OCR crudo.
 
 #### `GET /api/health`
@@ -598,7 +598,7 @@ corre sin cambios en Google Cloud Run o Render (contenedor con `uvicorn kenken.a
 **Splits y reglas**
 
 - `dev` puede usarse para ajustar y entrenar el OCR (sus glifos alimentan `train-ocr`).
-- `test` no se usa para entrenar ni ajustar (ver la nota de evaluación en [§10.1](#101-precisión)).
+- `test` no se usa para entrenar ni ajustar (ver la nota de evaluación en [§9.1](#91-precisión)).
 - `synthetic` es para pruebas de estrés y para ajustar parámetros.
 - Los archivos originales nunca se modifican; cada muestra tiene una etiqueta hermana `<k>.json`.
 
@@ -657,7 +657,7 @@ solo con fines académicos.
 
 ## 9. Resultados
 
-Todas las cifras se reproducen con los comandos de [§10.4](#104-reproducir).
+Todas las cifras se reproducen con los comandos de [§9.4](#94-reproducir).
 
 ### 9.1 Precisión
 
