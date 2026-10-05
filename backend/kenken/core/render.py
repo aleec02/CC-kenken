@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 from PIL import Image, ImageDraw
 
-from .fonts import default_font_path, load_font
+from .fonts import available_fonts, default_font_path, load_font
 from .puzzle import Puzzle
 
 
@@ -27,6 +27,29 @@ class RenderStyle:
 
 _UNICODE = {"+": "+", "-": "−", "*": "×", "/": "÷", "=": "", "?": "?"}
 _ASCII = {"+": "+", "-": "-", "*": "x", "/": "/", "=": "", "?": "?"}
+
+
+def _covers(font, chars: str) -> bool:
+    """True if `font` has a real glyph for every char (Pillow draws a .notdef box
+    for missing glyphs; we compare each mask against an unassigned codepoint)."""
+    notdef = np.asarray(font.getmask("￿"))
+    for ch in chars:
+        m = np.asarray(font.getmask(ch))
+        if m.size == 0 or (m.shape == notdef.shape and np.array_equal(m, notdef)):
+            return False
+    return True
+
+
+def _pick_clue_font(s: "RenderStyle") -> tuple[str | None, dict]:
+    """Font path + op map for clue text: the first installed font that actually
+    contains the op glyphs. If none does, fall back to ASCII ops so clues never
+    render as empty boxes."""
+    ops = _UNICODE if s.op_style == "unicode" else _ASCII
+    need = "".join(ops.values()) or "+-x/"
+    for path in dict.fromkeys([s.clue_font or default_font_path(), *available_fonts()]):
+        if _covers(load_font(path, 24), need):
+            return path, ops
+    return None, _ASCII
 
 
 def _borders(puzzle: Puzzle):
@@ -73,8 +96,7 @@ def render_puzzle(
     half = s.thick // 2
     draw.rectangle([px(0) - half, px(0) - half, px(n) + half, px(n) + half], outline=s.ink, width=s.thick)
 
-    ops = _UNICODE if s.op_style == "unicode" else _ASCII
-    font_path = s.clue_font or default_font_path()
+    font_path, ops = _pick_clue_font(s)
     clue_font = load_font(font_path, max(8, int(cell * s.clue_scale)))
     for cage in puzzle.cages:
         r, c = cage.anchor

@@ -541,6 +541,43 @@ export async function solveImage(file: File): Promise<SolveImageResponse> {
 **CORS**: por defecto se permite `http://localhost:3000`. Para otros orígenes:
 `KENKEN_CORS_ORIGINS="https://mi-app.vercel.app,http://localhost:3000"` antes de `kenken serve`.
 
+### 7.4 Despliegue serverless (Vercel)
+
+El repo se despliega como **un solo proyecto Vercel con dos servicios** (`vercel.json` en la
+raíz): `backend` (FastAPI como Vercel Function, detectada vía `backend/index.py` que reexporta
+`kenken.api:app`) y `frontend` (Next.js). Los rewrites enrutan `/api/*` al backend y todo lo
+demás al frontend, así que la web llama a la API en el **mismo origen**: no hace falta
+`NEXT_PUBLIC_API_URL` ni CORS en producción. `/docs` y `/openapi.json` también van al backend,
+por lo que la documentación interactiva queda pública.
+
+No se requieren variables de entorno en Vercel. Para desarrollo local, `frontend/.env.local`
+apunta `NEXT_PUBLIC_API_URL=http://127.0.0.1:8000` al `kenken serve` de siempre.
+
+Archivos involucrados (ya en el repo):
+
+- `vercel.json` (raíz) — servicios, memoria/duración de la función Python y rewrites públicos.
+- `backend/index.py` — entrypoint ASGI que Vercel reconoce (`app`); `kenken serve` sigue
+  funcionando igual para desarrollo local.
+- `backend/.vercelignore` — no sube `tests/`, cachés ni artefactos de build.
+- `backend/models/ocr_glyphs.npz` — el modelo OCR **sí se versiona** (a diferencia del resto de
+  `backend/models/`): el contenedor de Vercel no tiene las fuentes de Windows para reentrenarlo.
+- `opencv-python-headless` en vez de `opencv-python` (no se usa ninguna función de GUI).
+
+**Límites de Vercel que importan aquí** (plan Hobby):
+
+- **4.5 MB por petición/respuesta**: el cliente (`frontend/src/lib/api.ts`, `prepareUpload`)
+  recomprime en el navegador las fotos que superen ese tamaño (reescala a 2000 px de lado mayor y
+  baja la calidad JPEG) antes de subirlas; los PDF no se pueden recomprimir, así que uno muy
+  pesado puede fallar con un error 413 (mensaje ya traducido en la interfaz).
+- **500 MB de paquete** (Python): `ortools` + `opencv-python-headless` + `numpy` + `pymupdf`
+  entran holgados.
+- **Arranque en frío** (~2-4 s, primera petición tras inactividad): el `lifespan` de la API ya
+  precarga el clasificador OCR; la página del solver hace *ping* a `/api/health` al abrir, lo que
+  calienta la función antes de que el usuario suba un archivo.
+
+Si el volumen de imágenes pesadas o PDFs es alto y estos límites quedan cortos, el mismo backend
+corre sin cambios en Google Cloud Run o Render (contenedor con `uvicorn kenken.api:app`).
+
 ---
 
 ## 8. Datos
