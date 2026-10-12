@@ -1,0 +1,83 @@
+from ortools.sat.python import cp_model
+
+"""# Hospital: turnos de 3 especialistas (sobre-restringido)
+   Turnos: Mañana=1, Tarde=2, Noche=3 ; Ei en {1,2,3}
+   C1: AllDifferent(E1,E2,E3)   (dura)
+   C2: E1 == 1                   C3: E2 == 1
+   C4: E1 + E2 == 5              C5: E3 < E2
+"""
+
+turnos = {1: 'Mañana', 2: 'Tarde', 3: 'Noche'}
+
+# ---------------------------------------------------------------- Parte 1: CSP duro
+#crear CSP
+model = cp_model.CpModel()
+
+#variables y dominios
+E1 = model.NewIntVar(1, 3, 'E1')
+E2 = model.NewIntVar(1, 3, 'E2')
+E3 = model.NewIntVar(1, 3, 'E3')
+
+#restricciones (todas duras)
+model.AddAllDifferent([E1, E2, E3])   # C1
+model.Add(E1 == 1)                    # C2
+model.Add(E2 == 1)                    # C3
+model.Add(E1 + E2 == 5)               # C4
+model.Add(E3 < E2)                    # C5
+
+#crear solver
+solver = cp_model.CpSolver()
+status = solver.Solve(model)
+print('Parte 1 - CSP duro:', solver.StatusName(status))
+print('Walltime: %.4f ms' % (solver.WallTime() * 100))
+
+
+
+model = cp_
+
+
+# ---------------------------------------------------------------- Partes 2 y 3: soft constraints + COP
+#crear CSP
+model = cp_model.CpModel()
+
+#variables y dominios
+E1 = model.NewIntVar(1, 3, 'E1')
+E2 = model.NewIntVar(1, 3, 'E2')
+E3 = model.NewIntVar(1, 3, 'E3')
+
+#variables booleanas de penalización: vk = 1 <-> se viola Ck
+v2 = model.NewBoolVar('v2')
+v3 = model.NewBoolVar('v3')
+v4 = model.NewBoolVar('v4')
+v5 = model.NewBoolVar('v5')
+
+#restricciones
+model.AddAllDifferent([E1, E2, E3])   # C1 se mantiene dura
+
+#reificación bidireccional: vk=0 -> Ck se cumple ; vk=1 -> Ck se viola
+model.Add(E1 == 1).OnlyEnforceIf(v2.Not())        # C2
+model.Add(E1 != 1).OnlyEnforceIf(v2)
+model.Add(E2 == 1).OnlyEnforceIf(v3.Not())        # C3
+model.Add(E2 != 1).OnlyEnforceIf(v3)
+model.Add(E1 + E2 == 5).OnlyEnforceIf(v4.Not())   # C4
+model.Add(E1 + E2 != 5).OnlyEnforceIf(v4)
+model.Add(E3 < E2).OnlyEnforceIf(v5.Not())        # C5
+model.Add(E3 >= E2).OnlyEnforceIf(v5)
+
+#función objetivo: penalización ponderada
+pesos = {'C2': 3, 'C3': 1, 'C4': 2, 'C5': 1}      # disponibilidad > carga > preferencia, rotación
+model.Minimize(pesos['C2'] * v2 + pesos['C3'] * v3 + pesos['C4'] * v4 + pesos['C5'] * v5)
+
+#crear solver
+solver = cp_model.CpSolver()
+status = solver.Solve(model)
+
+if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+    print('Partes 2-3 - COP:', solver.StatusName(status))
+    print('  E1 ->', turnos[solver.Value(E1)])
+    print('  E2 ->', turnos[solver.Value(E2)])
+    print('  E3 ->', turnos[solver.Value(E3)])
+    print('  Violadas: C2=%i C3=%i C4=%i C5=%i' % (
+        solver.Value(v2), solver.Value(v3), solver.Value(v4), solver.Value(v5)))
+    print('  Penalización total:', int(solver.ObjectiveValue()))
+    print('Walltime: %.4f ms' % (solver.WallTime() * 1000))
