@@ -1,4 +1,5 @@
 from ortools.sat.python import cp_model
+import itertools
 import math
 
 """# Turista: 20 lugares, 4 días, 5 lugares por día, un circuito (TSP) por día
@@ -10,6 +11,7 @@ import math
    C3: grados de entrada y salida = x[i][d] (arcos solo entre lugares del mismo día)
    C4: MTZ condicional a los arcos activos (elimina subtours)
    Objetivo: minimizar la distancia euclidiana total de los 4 días
+   Parte 2: partición exacta en grupos de 5 (certifica que la solución MTZ es óptima)
 """
 
 # Los 20 lugares del TSP del curso (tsp.py, semana 5)
@@ -109,4 +111,53 @@ if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
         largo = sum(dist[tour[k]][tour[k + 1]] for k in range(len(tour) - 1)) / 100
         orden = [solver.Value(u[i][d]) for i in tour[:-1]]
         print('  Día %i: %s  (%.2f unidades, u = %s)' % (d, ' -> '.join(map(str, tour)), largo, orden))
+    print('Walltime: %.4f ms' % (solver.WallTime() * 1000))
+
+
+# ---------------------------------------------------------------- Parte 2: certificado de optimalidad
+# El modelo MTZ termina por tiempo (FEASIBLE). Para probar el óptimo se descompone el problema:
+#   1) para cada grupo de 5 lugares (C(20,5) = 15504) se calcula su mejor tour por enumeración
+#      (fijando el primer lugar y un sentido: 4!/2 = 12 tours por grupo)
+#   2) CP-SAT elige 4 grupos disjuntos que cubren los 20 lugares (partición exacta) con costo mínimo
+grupos, costo, mejor_tour = [], [], []
+for g in itertools.combinations(range(n), K):
+    mejor = None
+    for p in itertools.permutations(g[1:]):
+        if p[0] > p[-1]:
+            continue   # mismo tour en sentido contrario
+        t = (g[0],) + p
+        c = sum(dist[t[k]][t[(k + 1) % K]] for k in range(K))
+        if mejor is None or c < mejor[0]:
+            mejor = (c, t)
+    grupos.append(g)
+    costo.append(mejor[0])
+    mejor_tour.append(mejor[1])
+
+#crear CSP
+model = cp_model.CpModel()
+
+#variables y dominios: z[s] = 1 si el grupo s es uno de los 4 días
+z = [model.NewBoolVar('z' + str(s)) for s in range(len(grupos))]
+
+#restricciones: cada lugar está en exactamente un grupo elegido (=> exactamente 4 grupos)
+for i in range(n):
+    model.Add(sum(z[s] for s, g in enumerate(grupos) if i in g) == 1)
+
+#función objetivo
+model.Minimize(sum(costo[s] * z[s] for s in range(len(grupos))))
+
+#crear solver
+solver = cp_model.CpSolver()
+solver.parameters.max_time_in_seconds = 120
+solver.parameters.num_workers = 8
+status = solver.Solve(model)
+
+print('\nParte 2 - partición exacta:', solver.StatusName(status))
+if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+    print('Distancia total: %.2f unidades' % (solver.ObjectiveValue() / 100))
+    print('Cota inferior:   %.2f unidades' % (solver.BestObjectiveBound() / 100))
+    for s in range(len(grupos)):
+        if solver.Value(z[s]):
+            t = mejor_tour[s]
+            print('  %s -> %i  (%.2f unidades)' % (' -> '.join(map(str, t)), t[0], costo[s] / 100))
     print('Walltime: %.4f ms' % (solver.WallTime() * 1000))

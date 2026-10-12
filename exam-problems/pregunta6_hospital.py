@@ -29,11 +29,12 @@ model.Add(E3 < E2)                    # C5
 solver = cp_model.CpSolver()
 status = solver.Solve(model)
 print('Parte 1 - CSP duro:', solver.StatusName(status))
-print('Walltime: %.4f ms' % (solver.WallTime() * 100))
+print('Walltime: %.4f ms' % (solver.WallTime() * 1000))
 
-
-
-model = cp_
+# si el modelo es infactible no se detiene: se relajan C2..C5 como soft constraints
+# (feedback del INFEASIBLE -> modelo relajado, como el loop de autocorrección)
+if status == cp_model.INFEASIBLE:
+    print('Modelo infactible -> se relajan C2..C5 como restricciones suaves\n')
 
 
 # ---------------------------------------------------------------- Partes 2 y 3: soft constraints + COP
@@ -64,9 +65,41 @@ model.Add(E1 + E2 != 5).OnlyEnforceIf(v4)
 model.Add(E3 < E2).OnlyEnforceIf(v5.Not())        # C5
 model.Add(E3 >= E2).OnlyEnforceIf(v5)
 
-#función objetivo: penalización ponderada
+#penalización ponderada
 pesos = {'C2': 3, 'C3': 1, 'C4': 2, 'C5': 1}      # disponibilidad > carga > preferencia, rotación
-model.Minimize(pesos['C2'] * v2 + pesos['C3'] * v3 + pesos['C4'] * v4 + pesos['C5'] * v5)
+penalizacion = model.NewIntVar(0, sum(pesos.values()), 'penalizacion')
+model.Add(penalizacion == pesos['C2'] * v2 + pesos['C3'] * v3 + pesos['C4'] * v4 + pesos['C5'] * v5)
+
+
+# enumerar todas las asignaciones factibles con su penalización (comprueba el óptimo a mano)
+class HospitalSolutionPrinter(cp_model.CpSolverSolutionCallback):
+    def __init__(self, variables, violadas, penalizacion):
+        cp_model.CpSolverSolutionCallback.__init__(self)
+        self.__variables = variables
+        self.__violadas = violadas
+        self.__penalizacion = penalizacion
+        self.__solution_count = 0
+
+    def on_solution_callback(self):
+        self.__solution_count += 1
+        print('  %-28s violadas: %-14s penalización = %i' % (
+            ', '.join('%s=%s' % (v, turnos[self.Value(v)]) for v in self.__variables),
+            ' '.join('C%i' % k for k, v in zip(range(2, 6), self.__violadas) if self.Value(v)) or '-',
+            self.Value(self.__penalizacion)))
+
+    def solution_count(self):
+        return self.__solution_count
+
+
+print('Todas las asignaciones (C1 dura):')
+solver = cp_model.CpSolver()
+solution_printer = HospitalSolutionPrinter([E1, E2, E3], [v2, v3, v4, v5], penalizacion)
+solver.parameters.enumerate_all_solutions = True
+status = solver.Solve(model, solution_printer)
+print('Número de soluciones: %i\n' % solution_printer.solution_count())
+
+#función objetivo
+model.Minimize(penalizacion)
 
 #crear solver
 solver = cp_model.CpSolver()

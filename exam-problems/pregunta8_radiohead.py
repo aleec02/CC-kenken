@@ -7,12 +7,16 @@ from pathlib import Path
    C2: A[0] en {G, F}                                          (tónica de inicio)
    C3: A[15] en {G, C, F}                                      (reposo mayor final)
    C4: ningún acorde aparece más de 4 veces                    (conteo con reificación)
-   C5: la progresión no puede copiar 16 acordes seguidos de una canción original
-                                                               (AddForbiddenAssignments)
+   C5: no plagio: ninguna ventana de N_PLAGIO acordes seguidos puede copiar un fragmento
+       original (AddForbiddenAssignments en ventana deslizante, como el anti-plagio de vallejo.py)
+       N_PLAGIO = 16 -> la progresión completa no puede ser una original (lo que pide la pregunta)
+       N_PLAGIO = 4  -> versión estricta del curso (4-gramas); N_PLAGIO = 3 ya es infactible
 """
 
 T = 16                     # compases
 MAX_REPETICIONES = 4
+N_PLAGIO = 16              # largo de la ventana anti-plagio
+N_ALTERNATIVAS = 5         # progresiones alternativas a imprimir con el callback
 
 # ---------------------------------------------------------------- 1. leer y tokenizar el corpus
 archivo = Path(__file__).with_name('radiohead_chords.txt')
@@ -43,13 +47,11 @@ print('\nAcordes (%i): %s' % (K, ', '.join('%s=%i' % (a, id_de[a]) for a in voca
 
 tabla_permitida = [(id_de[a], id_de[b]) for a, b in bigramas]
 
-# fragmentos originales de 16 acordes (no plagio): la canción completa si tiene 16,
-# o todas sus ventanas de 16 acordes seguidos si es más larga
-originales = set()
-for acordes in canciones.values():
-    for inicio in range(len(acordes) - T + 1):
-        originales.add(tuple(id_de[a] for a in acordes[inicio:inicio + T]))
-print('Fragmentos originales prohibidos: %i' % len(originales))
+# tabla de plagio: todos los n-gramas de N_PLAGIO acordes seguidos de cada canción
+# (con N_PLAGIO = 16: la canción completa si tiene 16, o sus ventanas de 16 si es más larga)
+plagiarism_table = sorted({tuple(id_de[a] for a in acordes[i:i + N_PLAGIO])
+                           for acordes in canciones.values() for i in range(len(acordes) - N_PLAGIO + 1)})
+print('Fragmentos originales prohibidos (%i acordes): %i' % (N_PLAGIO, len(plagiarism_table)))
 
 # ---------------------------------------------------------------- 3. modelo CP
 #crear CSP
@@ -79,8 +81,9 @@ for k in range(K):
         usos += [b]
     model.Add(sum(usos) <= MAX_REPETICIONES)
 
-##C5: no plagio: la progresión completa no puede ser igual a un fragmento original
-model.AddForbiddenAssignments(A, sorted(originales))
+##C5: no plagio: cada ventana deslizante de N_PLAGIO acordes es distinta de todo fragmento original
+for i in range(T - N_PLAGIO + 1):
+    model.AddForbiddenAssignments(A[i:i + N_PLAGIO], plagiarism_table)
 
 #crear solver
 solver = cp_model.CpSolver()
@@ -97,6 +100,35 @@ if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
     assert all((progresion[t], progresion[t + 1]) in set(bigramas) for t in range(T - 1))
     assert progresion[0] in ('G', 'F') and progresion[-1] in ('G', 'C', 'F')
     assert max(progresion.count(a) for a in set(progresion)) <= MAX_REPETICIONES
-    assert tuple(id_de[a] for a in progresion) not in originales
+    assert all(tuple(id_de[a] for a in progresion[i:i + N_PLAGIO]) not in plagiarism_table
+               for i in range(T - N_PLAGIO + 1))
     print('Verificación: todas las restricciones se cumplen')
     print('Walltime: %.4f ms' % (solver.WallTime() * 1000))
+
+
+# ---------------------------------------------------------------- 5. alternativas con callback
+class ProgresionSolutionPrinter(cp_model.CpSolverSolutionCallback):
+    def __init__(self, variables, limite):
+        cp_model.CpSolverSolutionCallback.__init__(self)
+        self.__variables = variables
+        self.__limite = limite
+        self.__solution_count = 0
+
+    def on_solution_callback(self):
+        self.__solution_count += 1
+        progresion = [vocabulario[self.Value(a)] for a in self.__variables]
+        print('  #%i: %s' % (self.__solution_count,
+                             ' | '.join(' '.join(progresion[c:c + 4]) for c in range(0, T, 4))))
+        if self.__solution_count >= self.__limite:
+            self.StopSearch()   # el espacio tiene miles de progresiones: se cortan las primeras
+
+    def solution_count(self):
+        return self.__solution_count
+
+
+print('\nPrimeras %i progresiones válidas (enumerate_all_solutions):' % N_ALTERNATIVAS)
+solver = cp_model.CpSolver()
+solution_printer = ProgresionSolutionPrinter(A, N_ALTERNATIVAS)
+solver.parameters.enumerate_all_solutions = True
+status = solver.Solve(model, solution_printer)
+print('Estado = %s, soluciones impresas: %i' % (solver.StatusName(status), solution_printer.solution_count()))
